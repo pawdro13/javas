@@ -14,6 +14,13 @@
             } else {
                 // TODO: This application has been reactivated from suspension.
                 // Restore application state here.
+
+                //Retrieve greetingOutput session state info, if it exists.
+                var outputValue = WinJS.Application.sessionState.greetingOutput;
+                if (outputValue) {
+                    var greetingOutput = document.getElementById("greetingOutput");
+                    greetingOutput.innerText = outputValue;
+                }
             }
             args.setPromise(WinJS.UI.processAll().then(function completed() {
                 //Retrieve the div that host the Rating control.
@@ -22,9 +29,29 @@
                 var ratingControl = ratingControlDiv.winControl;
                 //Register the event handler
                 ratingControl.addEventListener("change", ratingChanged, false);
-                //Retrieve the button and register our event handler. 
+                //Retrieve the button and register event handler. 
                 var helloButton = document.getElementById("helloButton");
                 helloButton.addEventListener("click", buttonClickHandler, false);
+                //Retrieve the input element and register event handler.
+                var nameInput = document.getElementById("nameInput");
+                nameInput.addEventListener("change", nameInputChanged);
+                // Restore app data. 
+                var roamingSettings = Windows.Storage.ApplicationData.current.roamingSettings;
+
+                // Restore the user name.
+                var userName =
+                    Windows.Storage.ApplicationData.current.roamingSettings.values["userName"];
+                if (userName) {
+                    nameInput.value = userName;
+                }
+
+                // Restore the rating. 
+                var greetingRating = roamingSettings.values["greetingRating"];
+                if (greetingRating) {
+                    ratingControl.userRating = greetingRating;
+                    var ratingOutput = document.getElementById("ratingOutput");
+                    ratingOutput.innerText = greetingRating;
+                }
             }));
 
         }
@@ -42,10 +69,23 @@
         var userName = document.getElementById("nameInput").value;
         var greetingString = "Hello, " + userName + "!";
         document.getElementById("greetingOutput").innerText = greetingString;
+        //Save the session data.
+        WinJS.Application.sessionState.greetingOutput = greetingString;
     }
     function ratingChanged(eventInfo) {
         var ratingOutput = document.getElementById("ratingOutput");
         ratingOutput.innerText = eventInfo.detail.tentativeRating;
+        //Store the user's rating for multiple sessions.
+        var appData = Windows.Storage.ApplicationData.current;
+        var roamingsettings = appData.roamingSettings;
+        roamingsettings.values["greetingRating"] = eventInfo.detail.tentativeRating;
+    }
+    function nameInputChanged(eventInfo) {
+        var nameInput = eventInfo.srcElement;
+        //Store the user's name for multiple sessions.
+        var appData = Windows.Storage.ApplicationData.current;
+        var roamingsettings = appData.roamingSettings;
+        roamingsettings.values["userName"] = nameInput.value;
     }
     app.start();
 })();

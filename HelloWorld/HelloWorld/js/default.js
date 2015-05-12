@@ -16,6 +16,9 @@
                 // Restore application state here.
             }
             args.setPromise(WinJS.UI.processAll());
+            //Retrieve the button and register our event handler. 
+            var helloButton = document.getElementById("helloButton");
+            helloButton.addEventListener("click", buttonClickHandler, false);
         }
     };
 
@@ -27,6 +30,11 @@
         // asynchronous operation before your application is suspended, call
         // args.setPromise().
     };
+    function buttonClickHandler(eventInfo) {
+        var userName = document.getElementById("nameInput").value;
+        var greetingString = "Hello, " + userName + "!";
+        document.getElementById("greetingOutput").innerText = greetingString;
+    }
 
     app.start();
 })();

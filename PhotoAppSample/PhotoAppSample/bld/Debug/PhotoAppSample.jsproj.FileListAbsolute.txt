@@ -1,0 +1,15 @@
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bin\Debug\ReverseMap\resources.pri
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bin\Debug\AppxManifest.xml
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bin\Debug\PhotoAppSample.build.appxrecipe
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\priconfig.xml
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\priconfig.xml.intermediate
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\layout.resfiles
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\layout.resfiles.intermediate
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\resources.resfiles
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\resources.resfiles.intermediate
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\pri.resfiles
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\pri.resfiles.intermediate
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\qualifiers.txt
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\qualifiers.txt.intermediate
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\MultipleQualifiersPerDimensionFound.txt
+C:\Users\student\Desktop\PM_labs_Daniel_Mostowski\PhotoAppSample\PhotoAppSample\bld\Debug\ProjectArchitectures.txt

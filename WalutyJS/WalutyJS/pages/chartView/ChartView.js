@@ -22,7 +22,6 @@
             document.getElementById("rysuj").addEventListener('click', this.generujPunktyRysowania, false);//pobierz daty
             document.getElementById("dataPoczatkowa").addEventListener('change', this.sprawdzDate, false);//sprawdz date
             document.getElementById("dataKoncowa").addEventListener('change', this.sprawdzDate, false);//sprawdz date
-            document.getElementById("rysuj").disabled=true;//wylacz button rysuj
             rysuj();
         },
         sprawdzDate: function () {
@@ -31,9 +30,10 @@
             dPoczatkowa = document.getElementById("dataPoczatkowa").winControl;
             dKoncowa = document.getElementById("dataKoncowa").winControl;
             if (dKoncowa.current > dPoczatkowa.current) {
-
+                document.getElementById("errorLine").innerHTML = "Poprawna data";
             } else {
-                document.getElementById("errorLine").innerHTML = "Niepoprawna data";
+                document.getElementById("errorLine").innerHTML = "Data koncowa musi byc pozniejsza od koncowej";
+                document.getElementById("rysuj").disabled = true;//wylacz button rysuj
             }
 
         },
@@ -44,7 +44,7 @@
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             //informacja że wykres jest w trakcie ładowania
-            document.getElementById("pomoc").innerHTML = "Oczekiwanie na wykres.";
+            document.getElementById("errorLine").innerHTML = "Oczekiwanie na wykres.";
 
             //czyścimy punkty ze starego rysowania
             listaDoPobrania = [];
@@ -110,7 +110,7 @@
                         }
                     }
                     rysuj();
-                    document.getElementById("pomoc").innerHTML = "Wykres załadowany.";
+                    document.getElementById("ErrorLine").innerHTML = "Wykres załadowany.";
                 }
         );
 

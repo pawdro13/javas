@@ -5,26 +5,63 @@
     <title>homePage</title>
 
     <!-- WinJS references -->
-    <link href="//Microsoft.WinJS.2.0/css/ui-dark.css" rel="stylesheet" />
+    <link href="//Microsoft.WinJS.2.0/css/ui-light.css" rel="stylesheet" />
     <script src="//Microsoft.WinJS.2.0/js/base.js"></script>
     <script src="//Microsoft.WinJS.2.0/js/ui.js"></script>
 
     <link href="/css/default.css" rel="stylesheet" />
     <link href="/pages/home/home.css" rel="stylesheet" />
+    <link href="/css/bootstrap.min.css" rel="stylesheet" />
     <script src="/pages/home/home.js"></script>
 </head>
 <body>
     <!-- The content that will be loaded and displayed. -->
-    <div class="fragment homepage">
+
         <header aria-label="Header content" role="banner">
             <button data-win-control="WinJS.UI.BackButton"></button>
             <h1 class="titlearea win-type-ellipsis">
                 <span class="pagetitle">Welcome to WalutyJS!</span>
             </h1>
         </header>
-        <section aria-label="Main content" role="main">
-            <p>Content goes here.</p>
-        </section>
-    </div>
+            <div class="wrapper">
+                <div class="container">
+                    <div class="row" style="background:black;">
+                        <div class="col-lg-3">
+                            <input id="pobierzDaty" class="btn btn-default" type="button" value="Pobierz Daty" /><br />
+                        </div>
+                        <div class="col-lg-3">
+                            <input id="pobierzWaluty" class="btn btn-default" type="button" value="Pobierz waluty" /><br />
+                        </div>
+                        <div class="col-lg-3">
+
+                        </div>
+                        <div class="col-lg-3 pull-right">
+                            <input id="exitApp" class="btn btn-default" type="button" value="Exit" /><br />
+                        </div>
+                    </div>
+                    <div class="row">
+                          <div class="panel panel-default">
+                                <div class="panel-heading">
+                                   Tabele kursu
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-2">
+                                            <div id="daty" style="height: 500px; overflow: auto; ">
+                                                <!-- zawartosc wczytanych dat-->
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-10">
+                                            <div id="waluty" style="height: 500px; overflow: auto; ">
+                                                <!-- zawartosc wczytanych walut-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.panel-body -->
+                            </div>
+                    </div>
+                </div>
+                </div>
 </body>
 </html>

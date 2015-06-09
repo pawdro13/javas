@@ -13,16 +13,44 @@
     <script src="ChartView.js"></script>
 </head>
 <body>
-    <div class="ChartView fragment">
-        <header aria-label="Header content" role="banner">
-            <button data-win-control="WinJS.UI.BackButton"></button>
-            <h1 class="titlearea win-type-ellipsis">
-                <span class="pagetitle">Welcome to ChartView</span>
-            </h1>
-        </header>
-        <section aria-label="Main content" role="main">
-            <p>Content goes here.</p>
-        </section>
+
+    <div class="wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-11">
+                    <button data-win-control="WinJS.UI.BackButton" style="display:inline-block;"></button>
+                    <h1 class="titlearea win-type-ellipsis" style="display:inline-block;">
+                        <span class=" pagetitle">
+                            Welcome to ChartView
+                        </span>
+                    </h1>
+                </div>
+                <div class="col-lg-1">
+                    <input id="exitApp" class="btn btn-default" type="button" value="Zakończ Aplikacje" /><br />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <p>Data poczatkowa</p>
+                    <div id="dataPoczatkowa" data-win-control="WinJS.UI.DatePicker"></div>
+                    <p>Data koncowa</p>
+                    <div id="dataKoncowa" data-win-control="WinJS.UI.DatePicker"></div>
+                    <p id="errorLine">&nbsp;</p>
+                    <button style="display:inline-block; margin-top:50px;" id="rysuj">Rysuj</button>
+                </div>
+                <div class="col-lg-8">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div id="output3h"><canvas id="myCanvas" width="600px" height="500px" style="border:3px double white; background-color:grey;"></canvas></div>
+                            </div>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 </body>
 </html>

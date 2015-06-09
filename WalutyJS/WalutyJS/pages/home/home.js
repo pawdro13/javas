@@ -11,6 +11,7 @@
         ready: function (element, options) {
             // TODO: Initialize the page here.
             document.getElementById("pobierzWaluty").addEventListener('click', this.getWalutyHandler, false);//pobierz waluty
+            document.getElementById("exitApp").addEventListener('click', function a() { window.close(); }, false);//zakoncz aplikacje
             this.loadFileList();
         },
         //pobieranie dat
@@ -25,6 +26,7 @@
             WinJS.xhr({ url: "http://www.nbp.pl/kursy/xml/dir.txt", responseType: "text" }).done(
                 function complete(result) {
                     var arrayResponse = result.responseText.split('\r\n');
+                    arrayResponse.reverse();
                     //HTMLdatesTable wrzuci i wyświetli w divie
                     var HTMLdatesTable = "<table id=\"tableDaty\"><th>Daty</th>";
                     //dodajemy do tablic nowe daty
@@ -48,8 +50,7 @@
                     //listener na każdą datę
                     WinJS.Utilities.query(".dateW").listen("click", dateWa, false);
 
-                    //info ile rekordów
-                    //dateCount.innerHTML = "Odebrano: " + arrayResponse.length + " rekordow. Zaczynających się na a jest: " + dateArray.length + ". \r\n";
+                    
                 }, function error(error) {
                     output.innerHTML = "Got error: " + error.statusText;
                     // output.style.backgroundColor = "#FF0000";
@@ -76,8 +77,8 @@
                     //var outText = "<table id=\"tableWaluty\"><tr><td>Data publikacji: " + items[0].querySelector("data_publikacji").textContent + "</td>";
                     var outText = "<table class='table table-bordered'><tr><th>Kraj i Kod Waluty</th><th>Kurs sredni</th><th>Kraj i Kod Waluty</th><th>Kurs sredni</th></tr>";
                     items = xml.querySelectorAll('tabela_kursow > pozycja');
-                    for (var i = 0; i < items.length; i+=2) {
-                        outText += "<tr><td><a class=\"symbolW\">" + items[i].querySelector("nazwa_kraju").textContent + " " + items[i].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i].querySelector("kurs_sredni").textContent + "</td><td><a class=\"symbolW\">" + items[i].querySelector("nazwa_kraju").textContent + " " + items[i + 1].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i + 1].querySelector("kurs_sredni").textContent + "</td></tr>";
+                    for (var i = 0; i < items.length-1; i+=2) {
+                        outText += "<tr><td><a class=\"symbolW\">" + items[i].querySelector("nazwa_waluty").textContent + " " + items[i].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i].querySelector("kurs_sredni").textContent + "</td><td><a class=\"symbolW\">" + items[i].querySelector("nazwa_waluty").textContent + " " + items[i + 1].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i + 1].querySelector("kurs_sredni").textContent + "</td></tr>";
                     }
                     outText += "</table>";
                     output.innerHTML = window.toStaticHTML(outText);
@@ -96,7 +97,7 @@
         var x = document.getElementsByClassName("dateW");
         var i;
         for (i = 0; i < x.length; i++) {
-            x[i].style.color = "aqua";
+            x[i].style.color = "black";
         }
         eventInfo.target.style.color = "green";
     }

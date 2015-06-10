@@ -10,12 +10,13 @@
         // populates the page elements with the app's data.
         ready: function (element, options) {
             // TODO: Initialize the page here.
-            document.getElementById("pobierzWaluty").addEventListener('click', this.getWalutyHandler, false);//pobierz waluty
-            document.getElementById("exitApp").addEventListener('click', function a() { window.close(); }, false);//zakoncz aplikacje
 
+            //Handlery dla przyciskow
+            document.getElementById("pobierzWaluty").addEventListener('click', this.getWalutyHandler, false);//Handler dla przycisku do pobierania walut
+            document.getElementById("exitApp").addEventListener('click', function a() { window.close(); }, false);//Hnadler dla przycisku zakonczenia aplikacji
+            //Zaladuj daty do tabeli 
             this.loadFileList();
-
-            //przywraca session storage jezeli apka była : 
+            //Przywrocenie sesji jesli byla ona  
             if (WinJS.Application.sessionState.previousExecutionState === Windows.ApplicationModel.Activation.ApplicationExecutionState.terminated ||//terminated i byl suspend
                 WinJS.Application.sessionState.previousExecutionState === Windows.ApplicationModel.Activation.ApplicationExecutionState.suspended || //suspened
                 WinJS.Application.sessionState.previousExecutionState === Windows.ApplicationModel.Activation.ApplicationExecutionState.notRunning) { //notruning np bo przeszsła do innej strony
@@ -25,22 +26,18 @@
                 }
             }
         },
-        //pobieranie dat
+        //Funkcja pobierajaca dane do tabelki
         loadFileList: function () {
-            //var dateCount = document.getElementById("dateCount");//dodatkowe info czego ile pobrano
-            var output = document.getElementById("daty");//div na tablicę
-
+            var output = document.getElementById("daty");
             dateArray = [];
             showDateArray = [];
-
             //ajax query
             WinJS.xhr({ url: "http://www.nbp.pl/kursy/xml/dir.txt", responseType: "text" }).done(
                 function complete(result) {
                     var arrayResponse = result.responseText.split('\r\n');
                     arrayResponse.reverse();
-                    //HTMLdatesTable wrzuci i wyświetli w divie
                     var HTMLdatesTable = "<table id=\"tableDaty\"><th>Daty</th>";
-                    //dodajemy do tablic nowe daty
+                    //Dodanie kolejnych dat do tablicy
                     for (var i = 0; i < arrayResponse.length; i+=2) {
                         if (arrayResponse[i].substr(0, 1) == 'a') {
                             dateArray.push(arrayResponse[i]);
@@ -50,28 +47,21 @@
                     }
                     HTMLdatesTable += "</table>";
                     output.innerHTML = window.toStaticHTML(HTMLdatesTable);
-
-                    //dodaj do session storage date żeby przywrócić 
+                    //Dodanie do sesji
                      if (!WinJS.Application.sessionState.currentDate) {
                         currentDate = showDateArray[showDateArray.length - 1];
                         WinJS.Application.sessionState.currentDate = currentDate;
                         document.getElementById("infoData").innerHTML = " Data: " + currentDate;
-                    } 
-
-                    //listener na każdą datę
-                    WinJS.Utilities.query(".dateW").listen("click", dateWa, false);
-
-                    
+                     }
+                    //Ustawienie nasluchiwania na kazda date
+                    WinJS.Utilities.query(".dateW").listen("click", dateWa, false);                  
                 }, function error(error) {
                     output.innerHTML = "Got error: " + error.statusText;
-                    // output.style.backgroundColor = "#FF0000";
                 }, function progress(result) {
-                    //output.innerText = "Ready state is " + result.readyState;
                     output.innerText = "Ładowanie... ";
-                    //  output.style.backgroundColor = "#0000FF";
                 });
         },
-        //handler dla pobierania walut
+        //Funkcja sluzaca do pobierania walut
         getWalutyHandler: function (eventInfo) {
             var tmp;
             for (var i = 0; i < showDateArray.length; i++) {
@@ -85,7 +75,6 @@
                     var output = document.getElementById("waluty");
                     var xml = result.responseXML;
                     var items = xml.querySelectorAll('tabela_kursow');
-                    //var outText = "<table id=\"tableWaluty\"><tr><td>Data publikacji: " + items[0].querySelector("data_publikacji").textContent + "</td>";
                     var outText = "<table class='table table-bordered'><tr><th>Kod Waluty</th><th>Nazwa Waluty</th><th>Kurs Średni</th><th>Kod Waluty</th><th>Nazwa Waluty</th><th>Kurs Średni</th></tr>";
                     items = xml.querySelectorAll('tabela_kursow > pozycja');
                     for (var i = 0; i < items.length-1; i+=2) {
@@ -99,7 +88,7 @@
                 });
         }
     });
-
+    //Funkcja odpowiedzialna za zmiane koloru listy po nacisnieciu 
     function dateWa(eventInfo) {
         eventInfo.preventDefault();
         currentDate = eventInfo.target.innerHTML;
@@ -112,7 +101,7 @@
         }
         eventInfo.target.style.color = "green";
     }
-
+    //Funkcja odpowiedzialna za przejscie do drugiej strony po nacisnieciu w walute
     function symbolW(eventInfo) {
         eventInfo.preventDefault();
         WinJS.Navigation.navigate("/pages/chartView/ChartView.html", { symbol: eventInfo.target.innerHTML, data: currentDate });

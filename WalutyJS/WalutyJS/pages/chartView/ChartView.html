@@ -20,37 +20,36 @@
                 <div class="col-lg-11">
                     <button data-win-control="WinJS.UI.BackButton" style="display:inline-block;"></button>
                     <h1 class="titlearea win-type-ellipsis" style="display:inline-block;">
-                        <span class=" pagetitle">
-                            Welcome to ChartView
+                        <span class=" pagetitle" id="pageTitle">
+
                         </span>
                     </h1>
                 </div>
                 <div class="col-lg-1">
-                    <input id="exitApp" class="btn btn-default" type="button" value="Zakończ Aplikacje" /><br />
+                    <input id="exitAppChart" class="btn btn-default" type="button" value="Zakończ Aplikacje" /><br />
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-4">
-                    <p>Data poczatkowa</p>
-                    <div id="dataPoczatkowa" data-win-control="WinJS.UI.DatePicker"></div>
-                    <p>Data koncowa</p>
-                    <div id="dataKoncowa" data-win-control="WinJS.UI.DatePicker"></div>
-                    <p id="errorLine">&nbsp;</p>
-                    <button  margin-top:50px;" id="rysuj">Rysuj</button>
-                    <button  margin-top:50px;" id="zapisz">Zapisz</button>
-                </div>
-                <div class="col-lg-8">
                     <div class="panel panel-default">
                         <div class="panel-body">
-                            <div class="row">
-                                <div id="output3h"><canvas id="myCanvas" width="600px" height="500px" style="border:3px double white; background-color:grey;"></canvas></div>
-                            </div>
+                            <p>Data poczatkowa</p>
+                            <div id="dataPoczatkowa" data-win-control="WinJS.UI.DatePicker"></div>
+                            <p>Data koncowa</p>
+                            <div id="dataKoncowa" data-win-control="WinJS.UI.DatePicker"></div>
+                            <p id="errorLine">&nbsp;</p>
+                            <button margin-top:50px;" id="rysuj">Rysuj</button>
+                            <button margin-top:50px;" id="zapisz">Zapisz</button>
                         </div>
-                        <!-- /.panel-body -->
                     </div>
                 </div>
-            </div>
-        </div>
+                        <div class="col-lg-8">
+                            <div class="row">
+                                <canvas id="myCanvas" width="700px" height="400px" style="border:3px double white; background-color:grey;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
     </div>
 
 </body>

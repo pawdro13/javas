@@ -2,9 +2,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=232511
 (function () {
     "use strict";
-    var listaWalutaHelper = [];//lista obiektów {url:,data:,wartosc:}
-    var startdate;
-    var finishdate;
+    var listaWalutaHelper = [];//Tablica pomocnicza do przechowywania zmiennych 
     var records = [];//lista rekordów do rysowania
     var SYMBOL_WALUTY;
     var listaDoPobrania = [];//lista dla dat kursów które nie były pobrane jeszcze
@@ -12,20 +10,20 @@
     WinJS.UI.Pages.define("/pages/chartView/ChartView.html", {
         ready: function (element, options) {
 
-            //ustawia napisy przesłane z poprzedniej strony 
+            //Ustawienie tytulu strony z kodem waluty
             SYMBOL_WALUTY = options.symbol.toString();
-            //document.getElementById("Wtitle").innerHTML = "Historia waluty " + options.symbol.toString().toUpperCase();
-            //document.getElementById("poczatkowa").innerHTML = options.data.toString();
-            startdate = options.data.toString();
-            //ładuje tabelki z datami 
+            document.getElementById("pageTitle").innerHTML = "Historia waluty " + options.symbol.toString().toUpperCase();
+            //Zaladowanie dat do pamieci
             this.loadFileList();
-            document.getElementById("rysuj").addEventListener('click', this.generujPunktyRysowania, false);//pobierz daty
-            document.getElementById("zapisz").addEventListener('click', this.zapisz, false);//pobierz daty
-            document.getElementById("dataPoczatkowa").addEventListener('change', this.sprawdzDate, false);//sprawdz date
-            document.getElementById("dataKoncowa").addEventListener('change', this.sprawdzDate, false);//sprawdz date
-            rysuj();
+            //Dodanie handlerow do poszczegolwnych przyciskow
+            document.getElementById("rysuj").addEventListener('click', this.pobierzPunkty, false);//handler przycisku rysuj
+            document.getElementById("zapisz").addEventListener('click', this.zapisz, false);//handler przycisku zapisz
+            document.getElementById("dataPoczatkowa").addEventListener('change', this.sprawdzDate, false);//handler daty poczatkowej
+            document.getElementById("dataKoncowa").addEventListener('change', this.sprawdzDate, false);//handler daty koncowej
+            document.getElementById("exitAppChart").addEventListener('click', function a() { window.close(); }, false);//handler przycisku zamkniecia aplikacji
+            document.getElementById("zapisz").disabled = true; //Chwilowe wylaczenie przycisku od zapisu
         },
-
+        //Funckja sprawdzajaca czy data poczatkowa nie jest starsza od koncowej
         sprawdzDate: function () {
             var dPoczatkowa;
             var dKoncowa;
@@ -35,16 +33,19 @@
                 document.getElementById("errorLine").innerHTML = "Poprawna data";
             } else {
                 document.getElementById("errorLine").innerHTML = "Data koncowa musi byc pozniejsza od koncowej";
-                document.getElementById("rysuj").disabled = true;//wylacz button rysuj
+                document.getElementById("rysuj").disabled = true; // Jezeli nie jest poprawne to blokujemy przycisk
             }
 
         },
-
+        //Funkcja zapisujaca canvas do pliku
         zapisz: function(){
-            var Imaging = Windows.Graphics.Imaging;
             var picker = new Windows.Storage.Pickers.FileSavePicker();
-            picker.suggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.picturesLibrary;
+            var decoder;
+            picker.suggestedStartLocation =
+            Windows.Storage.Pickers.PickerLocationId.picturesLibrary;
+            picker.suggestedFileName = "Wykres";
             picker.fileTypeChoices.insert("PNG file", [".png"]);
+          
             var imgData, fileStream = null;
             picker.pickSaveFileAsync().then(function (file) {
                 if (file) {
@@ -53,39 +54,46 @@
                     return WinJS.Promise.wrapError("No file selected");
                 }
             }).then(function (stream) {
-                fileStream = stream;
+                fileStream = stream;        
                 var canvas = document.getElementById("myCanvas");
                 var ctx = canvas.getContext("2d");
                 imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-                return Imaging.BitmapEncoder.createAsync(Imaging.BitmapEncoder.pngEncoderId, stream);
+                return Windows.Graphics.Imaging.BitmapEncoder.createAsync(
+                Windows.Graphics.Imaging.BitmapEncoder.pngEncoderId, stream);
+            }).then(function (encoder) {
+                //Set the pixel data--assume "encoding" object has options from elsewhere.
+                //Conversion from canvas data to Uint8Array is necessary because the array type
+                //from the canvas doesn't match what WinRT needs here.
+                var canvas = document.getElementById("myCanvas");
+                encoder.setPixelData(Windows.Graphics.Imaging.BitmapPixelFormat.bgra8, Windows.Graphics.Imaging.BitmapAlphaMode.straight,
+                   canvas.width,canvas.height,96,96,
+                new Uint8Array(imgData.data));
+                //Go do the encoding
+                return encoder.flushAsync();
             }).done(function () {
-                //Make sure to do this at the end
                 fileStream.close();
             }, function () {
-                //Empty error handler (do nothing if the user canceled the picker
-            });
+                //Empty error handler (do nothing if the user canceled the picker)
+            });
         },
-
-        generujPunktyRysowania: function () {
+        //Funkcja pobierajca potrzebne punkty do narysowania wykresu
+        pobierzPunkty: function () {
             var dPoczatkowa;
             var dKoncowa;
             dPoczatkowa = document.getElementById("dataPoczatkowa").winControl;
             dKoncowa = document.getElementById("dataKoncowa").winControl;
-            //Czyści wykres
+            //Czyscimy wykres przed rysowaniem
             var canvas = document.getElementById("myCanvas");
             var context = canvas.getContext("2d");
             context.clearRect(0, 0, canvas.width, canvas.height);
-
-            //informacja że wykres jest w trakcie ładowania
+            //Info dla uzytkowania ze wykres jest w trakcie rysowania
             document.getElementById("errorLine").innerHTML = "Oczekiwanie na wykres.";
-
-            //czyścimy punkty ze starego rysowania
+            //Czysczenie bufora dla wykresu
             listaDoPobrania = [];
             records = [];
-
-            //jeżeli nie ma wartości kursu dla jakiejś daty wrzuca go id do listaDoPobrania
-            var zacznijDodawacPunkty = false;
+            //Flaga pokazujaca ze punkty naleza do przedzialu wybranego przez uzytkownika
+            var flagHistory = false;
+            //Tworzenie obiektow daty ograniczajacych obszar wybrany przez uzytkownika
             var dayPoczatkowa = dPoczatkowa.current.getDate();
             var monthPoczatkowa = dPoczatkowa.current.getMonth() + 1;
             var yearPoczatkowa = dPoczatkowa.current.getFullYear();
@@ -97,7 +105,7 @@
             var stringPoczatkowa;
             var stringKoncowa;
 
-            //konwert string;
+            //Konwersja daty do stringa
             stringPoczatkowa = yearPoczatkowa + "-";
             if (monthPoczatkowa < 10) {
                 stringPoczatkowa = stringPoczatkowa +"0"+ monthPoczatkowa + "-";
@@ -111,7 +119,7 @@
             }
             var dTmpPoczatkowa = new Date(stringPoczatkowa);
 
-            //konwert string;
+            //Konwersja daty do stringa
             stringKoncowa = yearKoncowa + "-";
             if (monthKoncowa < 10) {
                 stringKoncowa = stringKoncowa + "0" + monthKoncowa + "-";
@@ -125,37 +133,38 @@
             }
             var dTmpKoncowa = new Date(stringKoncowa);
 
-
+            //Petla sprawdzajaca czy punkt nalezy do przedzialu histori wybranego przez uzytkownika
+            //jesli tak to dodaje odpowiedni obiekt do bufora
             for (var i = 0; i < listaWalutaHelper.length; i++) {
                 var dTmp = new Date(listaWalutaHelper[i].data.toString());
                 if (dTmp >= dTmpPoczatkowa ) {
-                    zacznijDodawacPunkty = true;
+                    flagHistory = true;
                 }
-                //jeżeli punkt jest potrzebny
-                if (zacznijDodawacPunkty) {
-                    //jeżeli punkt nie był jeszcze pobrany
+                //Flaga ustawiona
+                if (flagHistory) {
+                    //Sprawdzanie czy punkt nie zostal jeszcze pobrany
                     if (listaWalutaHelper[i].wartosc == null) {
                         listaDoPobrania.push(i);
                     }
                 }
-                //jeżeli data końcowa przerwij
+                //Flaga zmienia sie jesli wykryty jest koniec przedzialu wybranego przez uzytkownika
                 if (dTmp >= dTmpKoncowa) {
-                    zacznijDodawacPunkty = false;
+                    flagHistory = false;
                     break;
                 }
             }
 
-            //OBIEKT !!!! w którym są pola które wskazują na funkcje które pobiorą wszystkie potrzebne pliki z kursami
+            //Buffor z funkcjami potrzebnymi do pobrania wszytskich plikow xml z kursami
             var promises = {};
             for (var i = 0; i < listaDoPobrania.length; i++) {
                 promises["fl" + listaDoPobrania[i]] = WinJS.xhr({ url: "http://www.nbp.pl/kursy/xml/" + listaWalutaHelper[listaDoPobrania[i]].url + ".xml" });
             }
 
-            //czekaj na pobranie wszystkich plików dostaje obiekt ww
+            //Czekanie az zostana pobrane wszytskie pliki potrzbene do narysowania
             WinJS.Promise.join(promises).done(
-                //po ukończeniu pobierania wszystkich potrzebnych plików
+                //Po pobierniau
                 function complete(xhr) {
-                    //wpisz do listaWalutaHelper[id].wartosc wszystkie pobrane wartości
+                    //Wpisywanie pobranych wartosci
                     for (var j = 0; j < listaDoPobrania.length; j++) {
                         var cResult = xhr["fl" + listaDoPobrania[j]].responseXML;
                         var items = cResult.querySelectorAll('tabela_kursow');
@@ -166,22 +175,20 @@
                         }
                     }
 
-                    //dodajemy punkty do rysowania
-                    var zacznijDodawacPunkty = false;
+                    //Petla dodajaca potrzebne punkty do bufora rysowania
+                    var flagHistory = false;
                     for (var i = 0; i < listaWalutaHelper.length; i++) {
                         var dTmp = new Date(listaWalutaHelper[i].data.toString());
                         if (dTmp >= dTmpPoczatkowa) {
-                            zacznijDodawacPunkty = true;
+                            flagHistory = true;
                         }
-                        //jeżeli to już data startowa dodawaj punkty do rysowania
-                        if (zacznijDodawacPunkty) {
+                        if (flagHistory) {
                             if (listaWalutaHelper[i].wartosc != null) {
                                 records.push(listaWalutaHelper[i].wartosc);
                             }
                         }
-                        //jeżeli data końcowa przerwij
                         if (dTmp >= dTmpKoncowa) {
-                            zacznijDodawacPunkty = false;
+                            flagHistory = false;
                             break;
                         }
                     }
@@ -192,10 +199,8 @@
 
 
         },
-        //pobieranie dat
+        //Funkcja pobierajaca daty potrzebne do narysowania wykresu
         loadFileList: function () {
-            //listaWalutaHelper []
-            //{ url: nazwapliku, data: data, wartosc: wartosc}
 
             //zapytanie typu ajax 
             WinJS.xhr({ url: "http://www.nbp.pl/kursy/xml/dir.txt", responseType: "text" }).done(
@@ -210,7 +215,7 @@
                     }
 
                 }, function error(error) {
-                    document.getElementById("ErrorLine").innerHTML = "Got error: " + error.statusText;
+                    document.getElementById("ErrorLine").innerHTML = "Eror: " + error.statusText;
                 }, function progress(result) {
                     document.getElementById("errorLine").innerText = "Ładowanie pliku dat... ";
                 }, function success(result) {
@@ -225,88 +230,72 @@
             // TODO: Respond to changes in layout.
         }
     });
-    function dateStartListener(eventInfo) {
-        eventInfo.preventDefault();
-        startdate = eventInfo.target.innerHTML;
-        document.getElementById("poczatkowa").innerHTML = startdate;
-        var x = document.getElementsByClassName("dateStartListener");
-        var i;
-        for (i = 0; i < x.length; i++) {
-            x[i].style.color = "aqua";
-        }
-        eventInfo.target.style.color = "magenta";
-    }
-    function dateStopListener(eventInfo) {
-        eventInfo.preventDefault();
-        finishdate = eventInfo.target.innerHTML;
-        document.getElementById("koncowa").innerHTML = finishdate;
-        var x = document.getElementsByClassName("dateStopListener");
-        var i;
-        for (i = 0; i < x.length; i++) {
-            x[i].style.color = "aqua";
-        }
-        eventInfo.target.style.color = "magenta";
-    }
+    //Funkcja rysujaca wykres 
     function rysuj() {
 
         var canvas = document.getElementById("myCanvas");
         var context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
         var margin = 40;
-        var width = 600;
-        var height = 500;
+        var width = canvas.width;
+        var height = canvas.height;
 
-        var lewy = margin;
-        var dol = height - margin;
-        var gora = margin;
-        var prawy = width - margin;
-        var separator = 10;
+        var leftMargin = margin;
+        var bottomMargin = height - margin;
+        var topMargin = margin;
+        var rightMargin = width - margin;
+        var sep = 10;
 
-        //linie wykresu
+        //Rysowanie osi wykresu
         context.beginPath();
         context.lineWidth = 2;
         context.strokeStyle = '#0000FF';
-        context.moveTo(lewy, gora);
-        context.lineTo(lewy, dol);
+        context.moveTo(leftMargin, topMargin);
+        context.lineTo(leftMargin, bottomMargin);
         context.stroke();
-        context.moveTo(lewy, dol);
-        context.lineTo(prawy, dol);
+        context.moveTo(leftMargin, bottomMargin);
+        context.lineTo(rightMargin, bottomMargin);
         context.stroke();
 
-        //strzałki
-        context.moveTo(lewy, gora);
-        context.lineTo(lewy - 6, gora + 6);
+        //Rysowanie strzalek
+        context.moveTo(leftMargin, topMargin);
+        context.lineTo(leftMargin - 6, topMargin + 6);
         context.stroke();
-        context.moveTo(lewy, gora);
-        context.lineTo(lewy + 6, gora + 6);
+        context.moveTo(leftMargin, topMargin);
+        context.lineTo(leftMargin + 6, topMargin + 6);
         context.stroke();
-        context.moveTo(prawy, dol);
-        context.lineTo(prawy - 6, dol + 6);
+        context.moveTo(rightMargin, bottomMargin);
+        context.lineTo(rightMargin - 6, bottomMargin + 6);
         context.stroke();
-        context.moveTo(prawy, dol);
-        context.lineTo(prawy - 6, dol - 6);
+        context.moveTo(rightMargin, bottomMargin);
+        context.lineTo(rightMargin - 6, bottomMargin - 6);
         context.stroke();
-        //Legenda kurs
+
+        //Napis WARTOŚĆ przy osi Y
         context.strokeStyle = '#000F00';
         context.lineWidth = 1;
         context.font = "14px Calibri";
-        context.strokeText("K", 20, 150);
-        context.strokeText("U", 20, 165);
+        context.strokeText("W", 20, 150);
+        context.strokeText("A", 20, 165);
         context.strokeText("R", 20, 180);
-        context.strokeText("S", 20, 195);
-        //Legenda Data
-        context.font = "14px Calibri";
-        context.strokeText("Data", 200, height - 20);
+        context.strokeText("T", 20, 195);
+        context.strokeText("O", 20, 210);
+        context.strokeText("Ś", 20, 225);
+        context.strokeText("Ć", 20, 240);
 
-        //zmiana koloru
+        //Napis przy osi X
+        context.font = "14px Calibri";
+        context.strokeText("Czas publikacji kursu", 200, height - 20);
+
+
         context.closePath();
         context.beginPath();
         context.strokeStyle = '#FF0000';
         context.lineWidth = 1;
-        var heightWykresu = height - margin - separator;
+        var heightWykresu = height - margin - sep;
         var widthWykresu = width - 2 * margin;
 
-        //obliczamy najmniejszy i największy
+        //Wyciagniecie najmniejszej wartosci oraz najwiekszej
         var najmniejszy = records[0];
         var najwiekszy = records[0];
         for (var i = 0; i < records.length; i++) {
@@ -318,15 +307,15 @@
             }
         }
 
-        //współczynniki przez które pomnożony punkt otrzyma wysokość i szerokość
+        //Obliczenie wspolczynnikow
         var wspolczynnikSzerokosciPunktu = widthWykresu / (records.length - 1);
-        var wspolczynnikWysokosciPunktu = (heightWykresu - margin - separator * 4) / (najwiekszy - najmniejszy);
+        var wspolczynnikWysokosciPunktu = (heightWykresu - margin - sep * 4) / (najwiekszy - najmniejszy);
 
-        //punkt startowy
+        //Punkt od ktorego startujemy
         var lastx = margin;
         var lasty = heightWykresu - (records[0] - najmniejszy) * wspolczynnikWysokosciPunktu;
 
-        //kolejnt punkty z tablicy records
+        //Rysowanie kojenego 
         for (var i = 1; i < records.length; i++) {
             context.moveTo(Math.round(lastx), Math.round(lasty));
             lastx = i * wspolczynnikSzerokosciPunktu + 40;
@@ -334,34 +323,33 @@
             context.lineTo(Math.round(lastx), Math.round(lasty));
             context.stroke();
         }
-
-        //zmiana koloru
         context.closePath();
         context.beginPath();
         context.strokeStyle = '#00FFFF';
 
-        //linia najwyższego kursu
-        context.moveTo(Math.round(lewy), Math.round(heightWykresu - (najwiekszy - najmniejszy) * wspolczynnikWysokosciPunktu));
-        context.lineTo(Math.round(prawy), Math.round(heightWykresu - (najwiekszy - najmniejszy) * wspolczynnikWysokosciPunktu));
+        //Linia zaznaczajaca najwieksza wartosc
+        context.moveTo(Math.round(leftMargin), Math.round(heightWykresu - (najwiekszy - najmniejszy) * wspolczynnikWysokosciPunktu));
+        context.lineTo(Math.round(rightMargin), Math.round(heightWykresu - (najwiekszy - najmniejszy) * wspolczynnikWysokosciPunktu));
         context.stroke();
 
-        //linia najniższego kursu
-        context.moveTo(Math.round(lewy), Math.round(heightWykresu - (najmniejszy - najmniejszy) * wspolczynnikWysokosciPunktu));
-        context.lineTo(Math.round(prawy), Math.round(heightWykresu - (najmniejszy - najmniejszy) * wspolczynnikWysokosciPunktu));
+        //Linia zaznaczajaca najnizsza wartosc
+        context.moveTo(Math.round(leftMargin), Math.round(heightWykresu - (najmniejszy - najmniejszy) * wspolczynnikWysokosciPunktu));
+        context.lineTo(Math.round(rightMargin), Math.round(heightWykresu - (najmniejszy - najmniejszy) * wspolczynnikWysokosciPunktu));
         context.stroke();
 
-        //opis najwyższego kursu
+        //Opis najwyzszej wartosci 
         context.strokeStyle = '#0F0F0F';
         context.lineWidth = 1;
         context.font = "12px Calibri";
-        context.strokeText(najwiekszy, Math.round(lewy + widthWykresu / 2), Math.round(heightWykresu - (najwiekszy - najmniejszy) * wspolczynnikWysokosciPunktu) - 4);
+        context.strokeText(najwiekszy, Math.round(leftMargin + widthWykresu / 2), Math.round(heightWykresu - (najwiekszy - najmniejszy) * wspolczynnikWysokosciPunktu) - 4);
 
 
-        //opis najniższego kursu
+        //Opis najnizszej wartosci 
         context.strokeStyle = '#0F0F0F';
         context.lineWidth = 1;
         context.font = "12px Calibri";
-        context.strokeText(najmniejszy, Math.round(lewy + widthWykresu / 2), Math.round(heightWykresu - (najmniejszy - najmniejszy) * wspolczynnikWysokosciPunktu) - 4);
+        context.strokeText(najmniejszy, Math.round(leftMargin + widthWykresu / 2), Math.round(heightWykresu - (najmniejszy - najmniejszy) * wspolczynnikWysokosciPunktu) - 4);
 
+        document.getElementById("zapisz").disabled = false;
     }
 })();

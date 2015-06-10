@@ -16,20 +16,24 @@
 
     <div class="wrapper">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-11">
-                    <button data-win-control="WinJS.UI.BackButton" style="display:inline-block;"></button>
-                    <h1 class="titlearea win-type-ellipsis" style="display:inline-block;">
-                        <span class=" pagetitle" id="pageTitle">
+            <div class="row" style="border-bottom: solid 1px;">
+                <div class=" col-lg-11">
+                <div class="row">
+                    <div class="col-lg-1"><button data-win-control="WinJS.UI.BackButton" style="margin-top:20px"></button></div>
+                    <div class="col-lg-11">
+                        <h1>
+                            <span class=" pagetitle" id="pageTitle">
 
-                        </span>
-                    </h1>
-                </div>
-                <div class="col-lg-1">
-                    <input id="exitAppChart" class="btn btn-default" type="button" value="Zakończ Aplikacje" /><br />
+                            </span>
+                        </h1>
+                    </div>
                 </div>
             </div>
-            <div class="row">
+                <div class="col-lg-1">
+
+                </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
                 <div class="col-lg-4">
                     <div class="panel panel-default">
                         <div class="panel-body">
@@ -40,16 +44,17 @@
                             <p id="errorLine">&nbsp;</p>
                             <button margin-top:50px;" id="rysuj">Rysuj</button>
                             <button margin-top:50px;" id="zapisz">Zapisz</button>
+                            <input id="exitAppChart" class="btn btn-default" type="button" value="Zakończ Aplikacje" style="margin-top:30px" /><br />
                         </div>
                     </div>
                 </div>
-                        <div class="col-lg-8">
-                            <div class="row">
-                                <canvas id="myCanvas" width="700px" height="400px" style="border:3px double white; background-color:grey;"></canvas>
-                            </div>
-                        </div>
+                <div class="col-lg-8">
+                    <div class="row">
+                        <canvas id="myCanvas" width="700px" height="400px" style="border:3px double white; background-color:grey;"></canvas>
                     </div>
                 </div>
+            </div>
+        </div>
     </div>
 
 </body>

@@ -14,6 +14,7 @@
             //Handlery dla przyciskow
             document.getElementById("pobierzWaluty").addEventListener('click', this.getWalutyHandler, false);//Handler dla przycisku do pobierania walut
             document.getElementById("exitApp").addEventListener('click', function a() { window.close(); }, false);//Hnadler dla przycisku zakonczenia aplikacji
+            document.getElementById("pobierzWaluty").disabled = true;
             //Zaladuj daty do tabeli 
             this.loadFileList();
             //Przywrocenie sesji jesli byla ona  
@@ -77,7 +78,7 @@
                     var items = xml.querySelectorAll('tabela_kursow');
                     var outText = "<table class='table table-bordered'><tr><th>Kod Waluty</th><th>Nazwa Waluty</th><th>Kurs Średni</th><th>Kod Waluty</th><th>Nazwa Waluty</th><th>Kurs Średni</th></tr>";
                     items = xml.querySelectorAll('tabela_kursow > pozycja');
-                    for (var i = 0; i < items.length-1; i+=2) {
+                    for (var i = 0; i < items.length-2; i+=2) {
                         outText += "<tr><td><a class=\"symbolW\">" + items[i].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i].querySelector("nazwa_waluty").textContent + "</td><td>" + items[i].querySelector("kurs_sredni").textContent + "</td><td><a class=\"symbolW\">" + items[i+1].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i+1].querySelector("nazwa_waluty").textContent + "</td><td>" + items[i+1].querySelector("kurs_sredni").textContent + "</td></tr>";
                     }
                     outText += "</table>";
@@ -100,6 +101,7 @@
             x[i].style.color = "black";
         }
         eventInfo.target.style.color = "green";
+        document.getElementById("pobierzWaluty").disabled = false;
     }
     //Funkcja odpowiedzialna za przejscie do drugiej strony po nacisnieciu w walute
     function symbolW(eventInfo) {

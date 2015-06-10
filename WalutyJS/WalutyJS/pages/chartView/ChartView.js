@@ -216,10 +216,6 @@
 
                 }, function error(error) {
                     document.getElementById("ErrorLine").innerHTML = "Eror: " + error.statusText;
-                }, function progress(result) {
-                    document.getElementById("errorLine").innerText = "Ładowanie pliku dat... ";
-                }, function success(result) {
-                    document.getElementById("errorLine").innerText = "Ładowanie pliku dat zakończone... ";
                 });
         },
         unload: function () {

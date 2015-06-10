@@ -18,12 +18,14 @@
             //document.getElementById("poczatkowa").innerHTML = options.data.toString();
             startdate = options.data.toString();
             //ładuje tabelki z datami 
-            //this.loadFileList();
+            this.loadFileList();
             document.getElementById("rysuj").addEventListener('click', this.generujPunktyRysowania, false);//pobierz daty
+            document.getElementById("zapisz").addEventListener('click', this.zapisz, false);//pobierz daty
             document.getElementById("dataPoczatkowa").addEventListener('change', this.sprawdzDate, false);//sprawdz date
             document.getElementById("dataKoncowa").addEventListener('change', this.sprawdzDate, false);//sprawdz date
             rysuj();
         },
+
         sprawdzDate: function () {
             var dPoczatkowa;
             var dKoncowa;
@@ -37,7 +39,39 @@
             }
 
         },
+
+        zapisz: function(){
+            var Imaging = Windows.Graphics.Imaging;
+            var picker = new Windows.Storage.Pickers.FileSavePicker();
+            picker.suggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.picturesLibrary;
+            picker.fileTypeChoices.insert("PNG file", [".png"]);
+            var imgData, fileStream = null;
+            picker.pickSaveFileAsync().then(function (file) {
+                if (file) {
+                    return file.openAsync(Windows.Storage.FileAccessMode.readWrite);
+                } else {
+                    return WinJS.Promise.wrapError("No file selected");
+                }
+            }).then(function (stream) {
+                fileStream = stream;
+                var canvas = document.getElementById("myCanvas");
+                var ctx = canvas.getContext("2d");
+                imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                return Imaging.BitmapEncoder.createAsync(Imaging.BitmapEncoder.pngEncoderId, stream);
+            }).done(function () {
+                //Make sure to do this at the end
+                fileStream.close();
+            }, function () {
+                //Empty error handler (do nothing if the user canceled the picker
+            });
+        },
+
         generujPunktyRysowania: function () {
+            var dPoczatkowa;
+            var dKoncowa;
+            dPoczatkowa = document.getElementById("dataPoczatkowa").winControl;
+            dKoncowa = document.getElementById("dataKoncowa").winControl;
             //Czyści wykres
             var canvas = document.getElementById("myCanvas");
             var context = canvas.getContext("2d");
@@ -52,8 +86,49 @@
 
             //jeżeli nie ma wartości kursu dla jakiejś daty wrzuca go id do listaDoPobrania
             var zacznijDodawacPunkty = false;
+            var dayPoczatkowa = dPoczatkowa.current.getDate();
+            var monthPoczatkowa = dPoczatkowa.current.getMonth() + 1;
+            var yearPoczatkowa = dPoczatkowa.current.getFullYear();
+
+            var dayKoncowa = dKoncowa.current.getDate();
+            var monthKoncowa = dKoncowa.current.getMonth() + 1;
+            var yearKoncowa = dKoncowa.current.getFullYear();
+
+            var stringPoczatkowa;
+            var stringKoncowa;
+
+            //konwert string;
+            stringPoczatkowa = yearPoczatkowa + "-";
+            if (monthPoczatkowa < 10) {
+                stringPoczatkowa = stringPoczatkowa +"0"+ monthPoczatkowa + "-";
+            } else {
+                stringPoczatkowa = stringPoczatkowa + monthPoczatkowa + "-";
+            }
+            if (dayPoczatkowa < 10) {
+                stringPoczatkowa = stringPoczatkowa + "0" + dayPoczatkowa;
+            } else {
+                stringPoczatkowa = stringPoczatkowa + dayPoczatkowa;
+            }
+            var dTmpPoczatkowa = new Date(stringPoczatkowa);
+
+            //konwert string;
+            stringKoncowa = yearKoncowa + "-";
+            if (monthKoncowa < 10) {
+                stringKoncowa = stringKoncowa + "0" + monthKoncowa + "-";
+            } else {
+                stringKoncowa = stringKoncowa + monthKoncowa + "-";
+            }
+            if (dayKoncowa < 10) {
+                stringKoncowa = stringKoncowa + "0" + dayKoncowa;
+            } else {
+                stringKoncowa = stringKoncowa + dayKoncowa;
+            }
+            var dTmpKoncowa = new Date(stringKoncowa);
+
+
             for (var i = 0; i < listaWalutaHelper.length; i++) {
-                if (listaWalutaHelper[i].data == startdate) {
+                var dTmp = new Date(listaWalutaHelper[i].data.toString());
+                if (dTmp >= dTmpPoczatkowa ) {
                     zacznijDodawacPunkty = true;
                 }
                 //jeżeli punkt jest potrzebny
@@ -64,7 +139,7 @@
                     }
                 }
                 //jeżeli data końcowa przerwij
-                if (listaWalutaHelper[i].data == finishdate) {
+                if (dTmp >= dTmpKoncowa) {
                     zacznijDodawacPunkty = false;
                     break;
                 }
@@ -94,7 +169,8 @@
                     //dodajemy punkty do rysowania
                     var zacznijDodawacPunkty = false;
                     for (var i = 0; i < listaWalutaHelper.length; i++) {
-                        if (listaWalutaHelper[i].data == startdate) {
+                        var dTmp = new Date(listaWalutaHelper[i].data.toString());
+                        if (dTmp >= dTmpPoczatkowa) {
                             zacznijDodawacPunkty = true;
                         }
                         //jeżeli to już data startowa dodawaj punkty do rysowania
@@ -104,20 +180,43 @@
                             }
                         }
                         //jeżeli data końcowa przerwij
-                        if (listaWalutaHelper[i].data == finishdate) {
+                        if (dTmp >= dTmpKoncowa) {
                             zacznijDodawacPunkty = false;
                             break;
                         }
                     }
                     rysuj();
-                    document.getElementById("ErrorLine").innerHTML = "Wykres załadowany.";
+                    document.getElementById("errorLine").innerHTML = "Wykres załadowany.";
                 }
         );
 
 
         },
         //pobieranie dat
-       
+        loadFileList: function () {
+            //listaWalutaHelper []
+            //{ url: nazwapliku, data: data, wartosc: wartosc}
+
+            //zapytanie typu ajax 
+            WinJS.xhr({ url: "http://www.nbp.pl/kursy/xml/dir.txt", responseType: "text" }).done(
+                function complete(result) {
+                    var arrayResponse = result.responseText.split('\r\n');
+                    //dodajemy do tablic nowe daty
+                    for (var i = 0; i < arrayResponse.length; i++) {
+                        if (arrayResponse[i].substr(0, 1) == 'a') {
+                            var dataFormatowana = "20" + arrayResponse[i].substr(5, 2) + "-" + arrayResponse[i].substr(7, 2) + "-" + arrayResponse[i].substr(9, 2);
+                            listaWalutaHelper.push({ url: arrayResponse[i], data: dataFormatowana, wartosc: null });
+                        }
+                    }
+
+                }, function error(error) {
+                    document.getElementById("ErrorLine").innerHTML = "Got error: " + error.statusText;
+                }, function progress(result) {
+                    document.getElementById("errorLine").innerText = "Ładowanie pliku dat... ";
+                }, function success(result) {
+                    document.getElementById("errorLine").innerText = "Ładowanie pliku dat zakończone... ";
+                });
+        },
         unload: function () {
             // TODO: Respond to navigations away from this page.
         },

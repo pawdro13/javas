@@ -12,7 +12,18 @@
             // TODO: Initialize the page here.
             document.getElementById("pobierzWaluty").addEventListener('click', this.getWalutyHandler, false);//pobierz waluty
             document.getElementById("exitApp").addEventListener('click', function a() { window.close(); }, false);//zakoncz aplikacje
+
             this.loadFileList();
+
+            //przywraca session storage jezeli apka była : 
+            if (WinJS.Application.sessionState.previousExecutionState === Windows.ApplicationModel.Activation.ApplicationExecutionState.terminated ||//terminated i byl suspend
+                WinJS.Application.sessionState.previousExecutionState === Windows.ApplicationModel.Activation.ApplicationExecutionState.suspended || //suspened
+                WinJS.Application.sessionState.previousExecutionState === Windows.ApplicationModel.Activation.ApplicationExecutionState.notRunning) { //notruning np bo przeszsła do innej strony
+                currentDate = WinJS.Application.sessionState.currentDate;
+                if (currentDate) {
+                    document.getElementById("infoData").innerHTML = "Data: " + currentDate;
+                }
+            }
         },
         //pobieranie dat
         loadFileList: function () {
@@ -41,11 +52,11 @@
                     output.innerHTML = window.toStaticHTML(HTMLdatesTable);
 
                     //dodaj do session storage date żeby przywrócić 
-                    // if (!WinJS.Application.sessionState.currentDate) {
-                    //    currentDate = showDateArray[showDateArray.length - 1];
-                    //    WinJS.Application.sessionState.currentDate = currentDate;
-                    //    document.getElementById("infoo").innerHTML = " Data: " + currentDate;
-                    //} 
+                     if (!WinJS.Application.sessionState.currentDate) {
+                        currentDate = showDateArray[showDateArray.length - 1];
+                        WinJS.Application.sessionState.currentDate = currentDate;
+                        document.getElementById("infoData").innerHTML = " Data: " + currentDate;
+                    } 
 
                     //listener na każdą datę
                     WinJS.Utilities.query(".dateW").listen("click", dateWa, false);
@@ -75,10 +86,10 @@
                     var xml = result.responseXML;
                     var items = xml.querySelectorAll('tabela_kursow');
                     //var outText = "<table id=\"tableWaluty\"><tr><td>Data publikacji: " + items[0].querySelector("data_publikacji").textContent + "</td>";
-                    var outText = "<table class='table table-bordered'><tr><th>Kraj i Kod Waluty</th><th>Kurs sredni</th><th>Kraj i Kod Waluty</th><th>Kurs sredni</th></tr>";
+                    var outText = "<table class='table table-bordered'><tr><th>Kod Waluty</th><th>Nazwa Waluty</th><th>Kurs Średni</th><th>Kod Waluty</th><th>Nazwa Waluty</th><th>Kurs Średni</th></tr>";
                     items = xml.querySelectorAll('tabela_kursow > pozycja');
                     for (var i = 0; i < items.length-1; i+=2) {
-                        outText += "<tr><td><a class=\"symbolW\">" + items[i].querySelector("nazwa_waluty").textContent + " " + items[i].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i].querySelector("kurs_sredni").textContent + "</td><td><a class=\"symbolW\">" + items[i].querySelector("nazwa_waluty").textContent + " " + items[i + 1].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i + 1].querySelector("kurs_sredni").textContent + "</td></tr>";
+                        outText += "<tr><td><a class=\"symbolW\">" + items[i].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i].querySelector("nazwa_waluty").textContent + "</td><td>" + items[i].querySelector("kurs_sredni").textContent + "</td><td><a class=\"symbolW\">" + items[i+1].querySelector("kod_waluty").textContent + "</a></td><td>" + items[i+1].querySelector("nazwa_waluty").textContent + "</td><td>" + items[i+1].querySelector("kurs_sredni").textContent + "</td></tr>";
                     }
                     outText += "</table>";
                     output.innerHTML = window.toStaticHTML(outText);
@@ -93,7 +104,7 @@
         eventInfo.preventDefault();
         currentDate = eventInfo.target.innerHTML;
         WinJS.Application.sessionState.currentDate = currentDate;
-        //document.getElementById("infoo").innerHTML = "Data: " + eventInfo.target.innerHTML;
+        document.getElementById("infoData").innerHTML = "Data: " + eventInfo.target.innerHTML;
         var x = document.getElementsByClassName("dateW");
         var i;
         for (i = 0; i < x.length; i++) {
